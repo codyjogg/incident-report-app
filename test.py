@@ -8,7 +8,7 @@ file_name = "incident_reports.csv"
 # ---------- PAGE ----------
 st.set_page_config(
     page_title="Incident Report System",
-    page_icon="📝",
+    page_icon="📋",
     layout="centered"
 )
 
@@ -28,6 +28,13 @@ st.markdown("""
     color: white;
 }
 
+.section {
+    font-size: 20px;
+    font-weight: bold;
+    margin-top: 20px;
+    margin-bottom: 10px;
+}
+
 div[data-testid="stForm"] {
     background-color: rgba(255,255,255,0.08);
     padding: 25px;
@@ -36,28 +43,117 @@ div[data-testid="stForm"] {
 </style>
 """, unsafe_allow_html=True)
 
-st.markdown('<div class="main-title">📝 Incident Report System</div>', unsafe_allow_html=True)
+st.markdown('<div class="main-title">📋 Incident Report Form</div>', unsafe_allow_html=True)
 
 # ---------- FORM ----------
 with st.form("incident_form"):
 
-    client_name = st.text_input("Client Name")
+    # ========== 1. BASIC INFO ==========
+    st.markdown("### 1. Basic Information")
 
-    incident_type = st.selectbox(
-        "Incident Type",
-        ["Aggression", "Property Destruction", "Self Injury", "Elopement", "Verbal Protest", "Other"]
+    client_name = st.text_input("Client Name")
+    incident_date = st.date_input("Date of Incident")
+    staff_reporting = st.text_input("Staff Reporting")
+    witness = st.text_input("Witness (if applicable)")
+
+    # ========== 2. TYPE OF REPORT ==========
+    st.markdown("### 2. Type of Report")
+
+    medical_emergency = st.selectbox(
+        "Medical Emergency",
+        ["None", "Seizure", "Allergic Reaction", "Difficulty Breathing", "Other"]
     )
 
-    # conditional "Other"
-    other_detail = ""
-    if incident_type == "Other":
-        other_detail = st.text_input("Please Describe Incident Type")
+    medical_other = ""
+    if medical_emergency == "Other":
+        medical_other = st.text_input("Specify Medical Emergency")
 
-    location = st.text_input("Location")
+    client_injury = st.selectbox(
+        "Client Injury Severity",
+        ["None", "Minor", "Moderate", "Severe"]
+    )
 
-    medical_involved = st.selectbox("Was Medical Involved?", ["No", "Yes"])
+    client_injury_desc = st.text_input("Client Injury Description")
 
-    incident_description = st.text_area("Incident Description")
+    staff_injury = st.selectbox(
+        "Staff Injury Severity",
+        ["None", "Minor", "Moderate", "Severe"]
+    )
+
+    staff_injury_desc = st.text_input("Staff Injury Description")
+
+    property_damage = st.selectbox("Property Damage", ["No", "Yes"])
+    property_damage_desc = ""
+
+    if property_damage == "Yes":
+        property_damage_desc = st.text_input("Describe Property Damage")
+
+    other_report = st.text_input("Other (if applicable)")
+
+    # ========== 3. BODY CHECK ==========
+    st.markdown("### 3. Body Check")
+
+    body_locations = st.multiselect(
+        "Location of Injuries",
+        ["Head", "Face", "Neck", "Shoulders", "Arms", "Hands", "Chest", "Back", "Abdomen", "Hips", "Legs", "Feet", "Other"]
+    )
+
+    body_other = ""
+    if "Other" in body_locations:
+        body_other = st.text_input("Specify Other Location")
+
+    injury_types = st.multiselect(
+        "Injury Description",
+        ["Bruising", "Scratches", "Cuts", "Swelling", "Redness", "Abrasions", "Bites", "Broken Skin", "Other"]
+    )
+
+    injury_other = ""
+    if "Other" in injury_types:
+        injury_other = st.text_input("Specify Other Injury Type")
+
+    severity = st.selectbox(
+        "Severity of Injury",
+        ["Minor", "Moderate", "Severe", "Requires Medical Attention"]
+    )
+
+    # ========== 4. ABUSE ==========
+    st.markdown("### 4. Suspected Abuse or Neglect")
+
+    abuse = st.selectbox("Was Abuse Suspected?", ["No", "Yes"])
+    abuse_signs = st.text_area("Signs Observed")
+
+    # ========== 5. ACTIONS ==========
+    st.markdown("### 5. Actions Taken")
+
+    actions_taken = st.multiselect(
+        "Actions Taken",
+        ["Cleaned wound", "Applied bandage", "Applied ice pack", "Called first responders", "Other"]
+    )
+
+    actions_other = ""
+    if "Other" in actions_taken:
+        actions_other = st.text_input("Specify Other Action")
+
+    supervisor_notified = st.selectbox("Supervisor Notified", ["No", "Yes"])
+    cps_notified = st.selectbox("CPS Notified", ["No", "Yes"])
+
+    notif_time = st.text_input("Notification Date/Time")
+
+    guardian_notified = st.selectbox("Parent/Guardian Notified", ["No", "Yes"])
+    guardian_time = st.text_input("Guardian Notification Date/Time")
+
+    # ========== 6. WITNESS ==========
+    st.markdown("### 6. Witness Statements")
+
+    witness_statement = st.text_area("Staff Witness Statement")
+
+    # ========== 7. SIGNATURES ==========
+    st.markdown("### 7. Signatures")
+
+    prepared_by = st.text_input("Prepared By")
+    report_date = st.date_input("Report Date")
+    reviewed_by = st.text_input("Reviewed By")
+    supervisor_signature = st.text_input("Supervisor Signature")
 
     submitted = st.form_submit_button("Submit Report")
 
@@ -65,16 +161,55 @@ with st.form("incident_form"):
 if submitted:
 
     data = {
-        "Date": [datetime.now().strftime("%Y-%m-%d %H:%M:%S")],
-        "Client Name": [client_name],
-        "Incident Type": [incident_type],
-        "Other Detail": [other_detail],
-        "Location": [location],
-        "Medical Involved": [medical_involved],
-        "Description": [incident_description]
+        "Client Name": client_name,
+        "Incident Date": incident_date,
+        "Staff Reporting": staff_reporting,
+        "Witness": witness,
+
+        "Medical Emergency": medical_emergency,
+        "Medical Other": medical_other,
+
+        "Client Injury": client_injury,
+        "Client Injury Desc": client_injury_desc,
+
+        "Staff Injury": staff_injury,
+        "Staff Injury Desc": staff_injury_desc,
+
+        "Property Damage": property_damage,
+        "Property Damage Desc": property_damage_desc,
+        "Other Report": other_report,
+
+        "Body Locations": ", ".join(body_locations),
+        "Body Other": body_other,
+
+        "Injury Types": ", ".join(injury_types),
+        "Injury Other": injury_other,
+        "Severity": severity,
+
+        "Abuse Suspected": abuse,
+        "Abuse Signs": abuse_signs,
+
+        "Actions Taken": ", ".join(actions_taken),
+        "Actions Other": actions_other,
+
+        "Supervisor Notified": supervisor_notified,
+        "CPS Notified": cps_notified,
+        "Notification Time": notif_time,
+
+        "Guardian Notified": guardian_notified,
+        "Guardian Time": guardian_time,
+
+        "Witness Statement": witness_statement,
+
+        "Prepared By": prepared_by,
+        "Report Date": report_date,
+        "Reviewed By": reviewed_by,
+        "Supervisor Signature": supervisor_signature,
+
+        "Submitted At": datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     }
 
-    df = pd.DataFrame(data)
+    df = pd.DataFrame([data])
 
     if os.path.exists(file_name):
         existing = pd.read_csv(file_name)
