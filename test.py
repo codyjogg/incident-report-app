@@ -14,22 +14,22 @@ st.set_page_config(
 st.markdown("""
 <style>
 
-/* Main app background */
+/* Main Background */
 .stApp {
     background: linear-gradient(to bottom right, #1e1e2f, #2b2b45);
     color: white;
 }
 
-/* Title styling */
+/* Main Title */
 .main-title {
     text-align: center;
     font-size: 42px;
     font-weight: bold;
-    color: #ffffff;
+    color: white;
     margin-bottom: 20px;
 }
 
-/* Form container */
+/* Form Styling */
 div[data-testid="stForm"] {
     background-color: rgba(255,255,255,0.08);
     padding: 30px;
@@ -38,26 +38,26 @@ div[data-testid="stForm"] {
     box-shadow: 0px 0px 15px rgba(0,0,0,0.3);
 }
 
-/* Input boxes */
+/* Input Fields */
 .stTextInput input,
 .stTextArea textarea {
     border-radius: 10px;
 }
 
-/* Submit button */
+/* Dropdowns */
+.stSelectbox div[data-baseweb="select"] {
+    border-radius: 10px;
+}
+
+/* Submit Button */
 .stButton > button {
     width: 100%;
-    border-radius: 12px;
     height: 50px;
+    border-radius: 12px;
     font-size: 18px;
     font-weight: bold;
     background-color: #4CAF50;
     color: white;
-}
-
-/* Success message */
-.stSuccess {
-    border-radius: 10px;
 }
 
 </style>
@@ -88,6 +88,11 @@ with st.form("incident_form"):
 
     location = st.text_input("Location")
 
+    medical_involved = st.selectbox(
+        "Was Medical Involved?",
+        ["No", "Yes"]
+    )
+
     incident_description = st.text_area(
         "Incident Description",
         height=200
@@ -103,6 +108,7 @@ if submitted:
         "Client Name": [client_name],
         "Incident Type": [incident_type],
         "Location": [location],
+        "Medical Involved": [medical_involved],
         "Description": [incident_description]
     }
 
@@ -123,8 +129,6 @@ if submitted:
 st.divider()
 
 st.subheader("Submitted Reports")
-
-file_name = "incident_reports.csv"
 
 if os.path.exists(file_name):
     reports_df = pd.read_csv(file_name)
