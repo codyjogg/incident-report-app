@@ -3,17 +3,16 @@ import pandas as pd
 from datetime import datetime
 import os
 
-# ---------- FILE NAME (FIX: must be global) ----------
 file_name = "incident_reports.csv"
 
-# ---------- PAGE CONFIG ----------
+# ---------- PAGE SETUP ----------
 st.set_page_config(
     page_title="Incident Report System",
     page_icon="📝",
     layout="centered"
 )
 
-# ---------- CUSTOM CSS ----------
+# ---------- CSS ----------
 st.markdown("""
 <style>
 
@@ -26,8 +25,8 @@ st.markdown("""
     text-align: center;
     font-size: 42px;
     font-weight: bold;
-    color: white;
     margin-bottom: 20px;
+    color: white;
 }
 
 div[data-testid="stForm"] {
@@ -35,26 +34,6 @@ div[data-testid="stForm"] {
     padding: 30px;
     border-radius: 20px;
     border: 1px solid rgba(255,255,255,0.1);
-    box-shadow: 0px 0px 15px rgba(0,0,0,0.3);
-}
-
-.stTextInput input,
-.stTextArea textarea {
-    border-radius: 10px;
-}
-
-.stSelectbox div[data-baseweb="select"] {
-    border-radius: 10px;
-}
-
-.stButton > button {
-    width: 100%;
-    height: 50px;
-    border-radius: 12px;
-    font-size: 18px;
-    font-weight: bold;
-    background-color: #4CAF50;
-    color: white;
 }
 
 </style>
@@ -63,41 +42,27 @@ div[data-testid="stForm"] {
 # ---------- TITLE ----------
 st.markdown('<div class="main-title">📝 Incident Report System</div>', unsafe_allow_html=True)
 
-# ---------- FORM ----------
-with st.form("incident_form"):
+# ---------- INPUTS (OUTSIDE FORM FOR DYNAMIC BEHAVIOR) ----------
+client_name = st.text_input("Client Name")
 
-    client_name = st.text_input("Client Name")
+incident_type = st.selectbox(
+    "Incident Type",
+    ["Aggression", "Property Destruction", "Self Injury", "Elopement", "Verbal Protest", "Other"]
+)
 
-    incident_type = st.selectbox(
-        "Incident Type",
-        [
-            "Aggression",
-            "Property Destruction",
-            "Self Injury",
-            "Elopement",
-            "Verbal Protest",
-            "Other"
-        ]
-    )
+# ✅ THIS NOW SHOWS INSTANTLY WHEN "OTHER" IS SELECTED
+other_incident_detail = ""
+if incident_type == "Other":
+    other_incident_detail = st.text_input("Please Describe Incident Type")
 
-    # Conditional extra field
-    other_incident_detail = ""
-    if incident_type == "Other":
-        other_incident_detail = st.text_input("Please Describe Incident Type")
+location = st.text_input("Location")
 
-    location = st.text_input("Location")
+medical_involved = st.selectbox("Was Medical Involved?", ["No", "Yes"])
 
-    medical_involved = st.selectbox(
-        "Was Medical Involved?",
-        ["No", "Yes"]
-    )
+incident_description = st.text_area("Incident Description")
 
-    incident_description = st.text_area(
-        "Incident Description",
-        height=200
-    )
-
-    submitted = st.form_submit_button("Submit Report")
+# ---------- SUBMIT BUTTON ----------
+submitted = st.button("Submit Report")
 
 # ---------- SAVE DATA ----------
 if submitted:
@@ -116,10 +81,9 @@ if submitted:
 
     if os.path.exists(file_name):
         existing_df = pd.read_csv(file_name)
-        updated_df = pd.concat([existing_df, df], ignore_index=True)
-        updated_df.to_csv(file_name, index=False)
-    else:
-        df.to_csv(file_name, index=False)
+        df = pd.concat([existing_df, df], ignore_index=True)
+
+    df.to_csv(file_name, index=False)
 
     st.success("✅ Incident Report Submitted Successfully!")
 
@@ -128,7 +92,6 @@ st.divider()
 st.subheader("Submitted Reports")
 
 if os.path.exists(file_name):
-    reports_df = pd.read_csv(file_name)
-    st.dataframe(reports_df, use_container_width=True)
+    st.dataframe(pd.read_csv(file_name), use_container_width=True)
 else:
     st.info("No reports submitted yet.")
