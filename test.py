@@ -86,6 +86,14 @@ with st.form("incident_form"):
         ]
     )
 
+    # SHOWS ONLY IF "OTHER" IS CHOSEN
+    other_incident_detail = ""
+
+    if incident_type == "Other":
+        other_incident_detail = st.text_input(
+            "Please Describe The Incident Type"
+        )
+
     location = st.text_input("Location")
 
     medical_involved = st.selectbox(
@@ -107,6 +115,7 @@ if submitted:
         "Date": [datetime.now().strftime("%Y-%m-%d %H:%M:%S")],
         "Client Name": [client_name],
         "Incident Type": [incident_type],
+        "Other Incident Detail": [other_incident_detail],
         "Location": [location],
         "Medical Involved": [medical_involved],
         "Description": [incident_description]
