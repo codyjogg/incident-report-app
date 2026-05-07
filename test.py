@@ -3,6 +3,9 @@ import pandas as pd
 from datetime import datetime
 import os
 
+# ---------- FILE NAME (FIX: must be global) ----------
+file_name = "incident_reports.csv"
+
 # ---------- PAGE CONFIG ----------
 st.set_page_config(
     page_title="Incident Report System",
@@ -14,13 +17,11 @@ st.set_page_config(
 st.markdown("""
 <style>
 
-/* Main Background */
 .stApp {
     background: linear-gradient(to bottom right, #1e1e2f, #2b2b45);
     color: white;
 }
 
-/* Main Title */
 .main-title {
     text-align: center;
     font-size: 42px;
@@ -29,7 +30,6 @@ st.markdown("""
     margin-bottom: 20px;
 }
 
-/* Form Styling */
 div[data-testid="stForm"] {
     background-color: rgba(255,255,255,0.08);
     padding: 30px;
@@ -38,18 +38,15 @@ div[data-testid="stForm"] {
     box-shadow: 0px 0px 15px rgba(0,0,0,0.3);
 }
 
-/* Input Fields */
 .stTextInput input,
 .stTextArea textarea {
     border-radius: 10px;
 }
 
-/* Dropdowns */
 .stSelectbox div[data-baseweb="select"] {
     border-radius: 10px;
 }
 
-/* Submit Button */
 .stButton > button {
     width: 100%;
     height: 50px;
@@ -64,10 +61,7 @@ div[data-testid="stForm"] {
 """, unsafe_allow_html=True)
 
 # ---------- TITLE ----------
-st.markdown(
-    '<div class="main-title">📝 Incident Report System</div>',
-    unsafe_allow_html=True
-)
+st.markdown('<div class="main-title">📝 Incident Report System</div>', unsafe_allow_html=True)
 
 # ---------- FORM ----------
 with st.form("incident_form"):
@@ -86,13 +80,10 @@ with st.form("incident_form"):
         ]
     )
 
-    # SHOWS ONLY IF "OTHER" IS CHOSEN
+    # Conditional extra field
     other_incident_detail = ""
-
     if incident_type == "Other":
-        other_incident_detail = st.text_input(
-            "Please Describe The Incident Type"
-        )
+        other_incident_detail = st.text_input("Please Describe Incident Type")
 
     location = st.text_input("Location")
 
@@ -123,8 +114,6 @@ if submitted:
 
     df = pd.DataFrame(data)
 
-    file_name = "incident_reports.csv"
-
     if os.path.exists(file_name):
         existing_df = pd.read_csv(file_name)
         updated_df = pd.concat([existing_df, df], ignore_index=True)
@@ -136,7 +125,6 @@ if submitted:
 
 # ---------- VIEW REPORTS ----------
 st.divider()
-
 st.subheader("Submitted Reports")
 
 if os.path.exists(file_name):
