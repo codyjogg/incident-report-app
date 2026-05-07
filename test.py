@@ -44,7 +44,7 @@ div[data-testid="stForm"] {
 st.markdown('<div class="main-title">📋 Incident Report System</div>', unsafe_allow_html=True)
 
 # ======================
-# DASHBOARD SUMMARY
+# DASHBOARD SUMMARY (FIXED)
 # ======================
 st.markdown("## 📊 Dashboard Summary")
 
@@ -54,8 +54,19 @@ if os.path.exists(file_name):
     df = pd.read_csv(file_name)
 
     total_reports = len(df)
-    high_risk = len(df[df["Severity"] == "Severe"]) if "Severity" in df.columns else 0
-    today_reports = len(df[df["Submitted At"].astype(str).str.contains(str(datetime.now().date()))])
+
+    # Safe high risk count
+    if "Severity" in df.columns:
+        high_risk = len(df[df["Severity"] == "Severe"])
+    else:
+        high_risk = 0
+
+    # Safe today count (FIXED KEYERROR)
+    if "Submitted At" in df.columns:
+        df["Submitted At"] = pd.to_datetime(df["Submitted At"], errors="coerce")
+        today_reports = len(df[df["Submitted At"].dt.date == datetime.now().date()])
+    else:
+        today_reports = 0
 
     col1.metric("Total Reports", total_reports)
     col2.metric("High Risk", high_risk)
@@ -74,6 +85,7 @@ st.divider()
 with st.form("incident_form"):
 
     st.markdown("### 🧾 Basic Information")
+
     client_name = st.text_input("Client Name")
     incident_date = st.date_input("Date of Incident")
     staff_reporting = st.text_input("Staff Reporting")
@@ -82,6 +94,7 @@ with st.form("incident_form"):
     st.divider()
 
     st.markdown("### 🚨 Incident Details")
+
     medical_emergency = st.selectbox(
         "Medical Emergency",
         ["None", "Seizure", "Allergic Reaction", "Difficulty Breathing", "Other"]
@@ -107,7 +120,7 @@ with st.form("incident_form"):
 
     st.divider()
 
-    with st.expander("🩺 Body Check (Expand)"):
+    with st.expander("🩺 Body Check"):
         body_locations = st.multiselect(
             "Location of Injuries",
             ["Head", "Face", "Neck", "Shoulders", "Arms", "Hands", "Chest", "Back", "Abdomen", "Hips", "Legs", "Feet", "Other"]
@@ -225,14 +238,6 @@ if submitted:
     df.to_csv(file_name, index=False)
 
     st.success("✅ Incident Report Submitted Successfully!")
-
-    # Visual feedback
-    if severity == "Severe":
-        st.error("🔴 HIGH PRIORITY INCIDENT")
-    elif severity == "Moderate":
-        st.warning("🟠 MEDIUM PRIORITY INCIDENT")
-    else:
-        st.success("🟢 LOW PRIORITY INCIDENT")
 
 # ======================
 # VIEW REPORTS
