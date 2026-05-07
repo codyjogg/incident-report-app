@@ -2,17 +2,13 @@ import streamlit as st
 import pandas as pd
 from datetime import datetime
 import os
-from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer
-from reportlab.lib.styles import getSampleStyleSheet
 
-# ---------- FILES ----------
-csv_file = "incident_reports.csv"
-pdf_file = "latest_incident_report.pdf"
+file_name = "incident_reports.csv"
 
-# ---------- PAGE CONFIG ----------
+# ---------- PAGE ----------
 st.set_page_config(
     page_title="Incident Report System",
-    page_icon="📋",
+    page_icon="📝",
     layout="centered"
 )
 
@@ -40,44 +36,22 @@ div[data-testid="stForm"] {
 </style>
 """, unsafe_allow_html=True)
 
-st.markdown('<div class="main-title">📋 Incident Report System</div>', unsafe_allow_html=True)
-
-# ---------- PDF FUNCTION ----------
-def create_pdf(data):
-    doc = SimpleDocTemplate(pdf_file)
-    styles = getSampleStyleSheet()
-    content = []
-
-    content.append(Paragraph("Incident Report", styles["Title"]))
-    content.append(Spacer(1, 12))
-
-    for key, value in data.items():
-        line = f"<b>{key}:</b> {value}"
-        content.append(Paragraph(line, styles["Normal"]))
-        content.append(Spacer(1, 8))
-
-    doc.build(content)
+st.markdown('<div class="main-title">📝 Incident Report System</div>', unsafe_allow_html=True)
 
 # ---------- FORM ----------
 with st.form("incident_form"):
 
-    st.markdown("### 1. Basic Information")
-
     client_name = st.text_input("Client Name")
-    incident_date = st.date_input("Date of Incident")
-    staff_reporting = st.text_input("Staff Reporting")
-    witness = st.text_input("Witness (if applicable)")
-
-    st.markdown("### 2. Type of Report")
 
     incident_type = st.selectbox(
         "Incident Type",
         ["Aggression", "Property Destruction", "Self Injury", "Elopement", "Verbal Protest", "Other"]
     )
 
-    other_incident = ""
+    # conditional "Other"
+    other_detail = ""
     if incident_type == "Other":
-        other_incident = st.text_input("Describe Other Incident Type")
+        other_detail = st.text_input("Please Describe Incident Type")
 
     location = st.text_input("Location")
 
@@ -85,57 +59,36 @@ with st.form("incident_form"):
 
     incident_description = st.text_area("Incident Description")
 
-    st.markdown("### 3. Actions / Notes")
-
-    witness_statement = st.text_area("Witness Statement")
-
     submitted = st.form_submit_button("Submit Report")
 
-# ---------- SUBMIT ----------
+# ---------- SAVE ----------
 if submitted:
 
-    report = {
-        "Client Name": client_name,
-        "Incident Date": str(incident_date),
-        "Staff Reporting": staff_reporting,
-        "Witness": witness,
-        "Incident Type": incident_type,
-        "Other Incident Detail": other_incident,
-        "Location": location,
-        "Medical Involved": medical_involved,
-        "Description": incident_description,
-        "Witness Statement": witness_statement,
-        "Submitted At": datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    data = {
+        "Date": [datetime.now().strftime("%Y-%m-%d %H:%M:%S")],
+        "Client Name": [client_name],
+        "Incident Type": [incident_type],
+        "Other Detail": [other_detail],
+        "Location": [location],
+        "Medical Involved": [medical_involved],
+        "Description": [incident_description]
     }
 
-    df = pd.DataFrame([report])
+    df = pd.DataFrame(data)
 
-    # Save CSV
-    if os.path.exists(csv_file):
-        old = pd.read_csv(csv_file)
-        df = pd.concat([old, df], ignore_index=True)
+    if os.path.exists(file_name):
+        existing = pd.read_csv(file_name)
+        df = pd.concat([existing, df], ignore_index=True)
 
-    df.to_csv(csv_file, index=False)
-
-    # Create PDF
-    create_pdf(report)
+    df.to_csv(file_name, index=False)
 
     st.success("✅ Incident Report Submitted Successfully!")
 
-    # Download PDF
-    with open(pdf_file, "rb") as f:
-        st.download_button(
-            label="📄 Download PDF Report",
-            data=f,
-            file_name=f"incident_report_{client_name}.pdf",
-            mime="application/pdf"
-        )
-
-# ---------- VIEW REPORTS ----------
+# ---------- VIEW ----------
 st.divider()
 st.subheader("Submitted Reports")
 
-if os.path.exists(csv_file):
-    st.dataframe(pd.read_csv(csv_file), use_container_width=True)
+if os.path.exists(file_name):
+    st.dataframe(pd.read_csv(file_name), use_container_width=True)
 else:
     st.info("No reports submitted yet.")
